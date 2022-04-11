@@ -1,0 +1,586 @@
+Phase: firstpass
+Input: Token Lookup
+Options: control = appelt
+
+Rule: JURISDICTION
+Priority: 20
+(
+  { Token.kind == word }
+  { Token.kind == word }
+  { Token.string == "JURISDICTION" }
+) :Jurisdiction
+-->
+:Jurisdiction .JURISDICTION = { rule = "JURISDICTION" }
+
+Rule: PETITIONER
+Priority: 20
+(
+  (
+    { Token.string == "PETITIONER" }
+  ) :Type
+  { Token.string == ":" }
+  (
+    { Token.kind == "word", Token.string != "RESPONDENT" }
+    ({ Token.kind == "punctuation" })?
+    ({ Token.kind == "word", Token.string != "RESPONDENT" })*
+    ({ Token.kind == "punctuation" })?
+    ({ Token.kind == "word", Token.string != "RESPONDENT" })*
+  )+ :Name
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "PETITIONER", rule = "PETITIONER" },
+:Name .PARTICIPANT = { rule = "PETITIONER" }
+
+Rule: RESPONDENT
+Priority: 20
+(
+  (
+    { Token.string == "RESPONDENT" }
+  ) :Type
+  { Token.string == ":" }
+  (
+    { Token.kind == "word", Token.string != "DATE" }
+    ({ Token.kind == "punctuation" })?
+    ({ Token.kind == "word", Token.string != "DATE" })*
+    ({ Token.kind == "punctuation" })?
+    ({ Token.kind == "word", Token.string != "DATE" })*
+  )+ :Name
+) 
+-->
+:Type .PARTICIPANT_TYPE = {  kind = "RESPONDENT", rule = "RESPONDENT"  },
+:Name .PARTICIPANT = {  rule = "RESPONDENT"  }
+
+Rule: RESPONDENT_1
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.string != "versus" } |
+    { Token.kind == "punctuation" }
+  )+ :Name
+  { Token.string == "." }
+  { Token.string == "." }
+  ({ Token.string == "." })?
+  (
+    { Token.string == "Respondents" } |
+    { Token.string == "Respondent" }
+  ) :Type
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "RESPONDENT", rule = "RESPONDENT_1" },
+:Name .PARTICIPANT = { rule = "RESPONDENT_1" }
+
+
+Rule: RESPONDENT_2
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.string != "Versus" } |
+    { Token.kind == "punctuation" }
+  )+ :Name
+  (
+    { Token.string == "Respondent" }
+  ) :Type
+  { Token.string == "(" }
+  { Token.string == "s" }
+  { Token.string == ")" }
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "RESPONDENT", rule = "RESPONDENT_2" },
+:Name .PARTICIPANT = { rule = "RESPONDENT_2" }
+
+Rule: RESPONDENT_3
+Priority: 20
+(
+  { Token.string == "VERSUS" }
+  (
+    { Token.kind == "word", Token.string != "Versus" } |
+    { Token.kind == "punctuation" }
+  )+ :Name
+  (
+    { Token.string == "RESPONDENT" }
+  ) :Type
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "RESPONDENT", rule = "RESPONDENT_3" },
+:Name .PARTICIPANT = { rule = "RESPONDENT_3" }
+
+Rule: APPELLANT
+Priority: 20
+(
+  (
+    { Token.string == "APPELLANT" }
+  ) :Type
+  { Token.string == ":" }
+  (
+    { Token.kind == "word", Token.string != "RESPONDENT" } |
+    { Token.kind == "punctuation" }
+  )+ :Name
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "APPELLANT", rule = "APPELLANT" },
+:Name .PARTICIPANT = { rule = "APPELLANT" }
+
+Rule: APPELLANT_1
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.string != "versus" }
+  )+ :Name
+  { Token.string == "." }
+  ({ Token.string == "." })*
+  (
+    { Token.string == "Appellant" }
+  ) :Type
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "APPELLANT", rule = "APPELLANT_1" },
+:Name .PARTICIPANT = { rule = "APPELLANT_1" }
+
+Rule: APPELLANT_2
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.string != "versus" } |
+    { Token.kind == "word", Token.string != "VERSUS" } |
+    { Token.kind == "word", Token.string != "Versus" } 
+    { Token.kind == "punctuation" }
+  )+ :Name
+  (
+    { Token.string == "Appellant" }
+  ) :Type
+  { Token.string == "(" }
+  { Token.string == "s" }
+  { Token.string == ")" }
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "APPELLANT", rule = "APPELLANT_2" },
+:Name .PARTICIPANT = { rule = "APPELLANT_2" }
+
+Rule: APPELLANT_3
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.category == "NNP" } |
+    { Token.kind == "punctuation" }
+  )+ :Name
+  (
+    { Token.string == "APPELLANT" }
+  ) :Type
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "APPELLANT", rule = "APPELLANT_3" },
+:Name .PARTICIPANT = { rule = "APPELLANT_3" }
+
+Rule: BENCH
+Priority: 20
+(
+  (
+    { Token.string == "BENCH" }
+  ) :Type
+  { Token.string == ":" }
+  (
+    { Token.kind == "word", Token.category != "CC" } |
+    { Token.string == ".", Token.category != "CC" }
+  )+ :Name
+  ({ Token.kind == "punctuation" })?
+  ((
+    { Token.kind == "word", Token.string != "JUDGMENT" } |
+    { Token.string == ".", Token.sting != "JUDGMENT" }
+  )+) :Name2
+) 
+-->
+:Type .PARTICIPANT_TYPE = { kind = "BENCH", rule = "BENCH" },
+:Name .PARTICIPANT = { rule = "BENCH" },
+:Name2 .PARTICIPANT = { rule = "BENCH" }
+
+Rule: BENCH_1
+Priority: 20
+(
+  { Token.string == "J" }
+  { Token.string == "." }
+  { Token.string == "(" }
+  (
+    { Token.kind == "word", Token.category != "CC" } |
+    { Token.string == ".", Token.category != "CC" }
+  )+ :Name
+  { Token.string == ")" }
+) 
+-->
+:Name .PARTICIPANT = { rule = "BENCH_1" }
+
+Rule: BENCH_2
+Priority: 20
+(
+  (
+    { Token.kind == "word", Token.category == "NNP", Token.orth != "lowercase", Token.string != "JUDGMENT" } |
+    { Token.string == ".", Token.category != "CC" }
+  )+ :Name
+  { Token.string == "," }
+  { Token.string == "J" }
+  ({ Token.string == "." })?
+) 
+-->
+:Name .PARTICIPANT = { rule = "BENCH_2" }
+
+Rule: BENCH_3
+Priority: 20
+(
+  { Token.string == "J" }
+  { Token.string == "." }
+  { Token.string == "[" }
+  (
+    { Token.kind == "word", Token.category != "CC", Token.orth != "lowercase", Token.string != "JUDGMENT" } |
+    { Token.string == ".", Token.category != "CC" }
+  )+ :Name
+  { Token.string == "]" }
+) 
+-->
+:Name .PARTICIPANT = { rule = "BENCH_3" }
+
+
+Rule: PLAINTIFF
+Priority: 20
+(
+  (
+    { Token.string == "Mr" } |
+    { Token.string == "Mrs" } |
+    { Token.string == "Shri" }
+  )
+  { Token.string == "." }
+  (
+    { Token.kind == "word", Token.category != "CC" } |
+    { Token.string == ".", Token.category != "CC" }
+  )+ :Name
+  { Token.string == "," }
+  { Token.string == "learned" }
+  { Token.string == "counsel" }
+) 
+-->
+:Name .PARTICIPANT = { rule = "PLAINTIFF" }
+
+Rule: DATE
+Priority: 20
+(
+  (
+    { Token.kind == number, Token.length == 2 } |
+    { Token.kind == number, Token.length == 1 }
+  )
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number, Token.length == 2 } |
+    { Token.kind == number, Token.length == 1 }
+  )
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number, Token.length == 4 } |
+    { Token.kind == number, Token.length == 2 }
+  )
+) :Date
+-->
+:Date .DATE = { kind = "DATE", rule = "DATE" }
+
+Rule: DATE_1
+Priority: 20
+(
+  { Token.kind == word }
+  (
+    { Token.kind == number, Token.length == 2 } |
+    { Token.kind == number, Token.length == 1 }
+  )
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number, Token.length == 4 }
+  )
+) :Date
+-->
+:Date .DATE = { kind = "DATE", rule = "DATE_1" }
+
+Rule: DATE_1
+Priority: 20
+(
+  { Token.category == "JJ" }
+  { Token.kind == word }
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number, Token.length == 4 }
+  )
+) :Date
+-->
+:Date .DATE = { kind = "DATE", rule = "DATE_1" }
+
+
+Rule: CASE_APPEAL
+Priority: 20
+(
+  { Token.string == "Appeal" }
+  { Token.string == "(" }
+  ({ Token.kind == "word"}) :Type
+  { Token.string == ")" }
+  { Token.kind == number }
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  { Token.kind == number, Token.length == 4 }
+) :Case
+-->
+:Type .CASE_TYPE = { kind = "CASE_APPEAL", rule = "CASE_APPEAL" },
+:Case .CASE = { rule = "CASE_APPEAL" }
+
+Rule: CASE_APPEAL_1
+Priority: 20
+(
+  (
+    { Token.string == "CIVIL" } |
+    { Token.string == "CRIMINAL" }
+  ) :Type
+  { Token.string == "APPEAL" }
+  { Token.string == "NO" }
+  { Token.kind == punctuation }
+  { Token.kind == number }
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  { Token.kind == number, Token.length == 4 }
+) :Case
+-->
+:Type .CASE_TYPE = { kind = "CASE_APPEAL", rule = "CASE_APPEAL_1" },
+:Case .CASE = { rule = "CASE_APPEAL_1" }
+
+Rule: CASE_APPEAL_2
+Priority: 20
+(
+  (
+    { Token.string == "CIVIL" } |
+    { Token.string == "CRIMINAL" }
+  ) :Type
+  { Token.string == "APPEAL" }
+  (
+    { Token.string == "No" } |
+    { Token.string == "NOs" } |
+    { Token.string == "Nos" } |
+    { Token.string == "NO" }
+  )
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number } |
+    { Token.kind == word, Token.string != "OF", Token.string != "of" } |
+    { Token.kind == punctuation }
+  )+
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  { Token.kind == number, Token.length == 4 }
+) :Case
+-->
+:Type .CASE_TYPE = { kind = "CASE_APPEAL", rule = "CASE_APPEAL_2" },
+:Case .CASE = { rule = "CASE_APPEAL_2" }
+
+Rule: SLP_PETITION
+Priority: 20
+(
+  { Token.string == "SLP" }
+  { Token.string == "(" }
+  ({ Token.kind == "word"}) :Type
+  { Token.string == ")" }
+  (
+    { Token.string == "No" } |
+    { Token.string == "Nos" } |
+    { Token.string == "NO" }
+  )
+  { Token.kind == punctuation }
+  (
+    { Token.kind == number } |
+    { Token.kind == word, Token.string != "OF", Token.string != "of" } |
+    { Token.kind == punctuation }
+  )+
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  { Token.kind == number, Token.length == 4 }
+) :Case
+-->
+:Type .CASE_TYPE = { kind = "SLP_PETITION", rule = "SLP_PETITION" },
+:Case .CASE = { rule = "SLP_PETITION" }
+
+Rule: COURT
+Priority: 20
+(
+  (
+    { Token.string == "SUPREME" } |
+    { Token.string == "Supreme" }
+  )
+  (
+    { Token.string == "COURT" } |
+    { Token.string == "Court" }
+  )
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  (
+    { Token.string == "INDIA" } |
+    { Token.string == "India" }
+  )
+) :Court
+-->
+:Court .COURT = { rule = "COURT", kind="SUPREME_COURT_OF_INDIA" }
+
+Rule: COURT_1
+Priority: 20
+(
+  ({ Token.kind == word, Token.category == "NNP" })?
+  ({ Token.kind == word, Token.category == "NNP" })?
+  (
+    { Token.string == "HIGH" } |
+    { Token.string == "High" }
+  )
+  (
+    { Token.string == "COURT" } |
+    { Token.string == "Court" }
+  )
+) :Court
+-->
+:Court .COURT = { rule = "COURT_1", kind="HIGH_COURT" }
+
+Rule: COURT_2
+Priority: 20
+(
+  (
+    { Token.string == "HIGH" } |
+    { Token.string == "High" }
+  )
+  (
+    { Token.string == "COURT" } |
+    { Token.string == "Court" }
+  )
+  (
+    { Token.string == "OF" } |
+    { Token.string == "of" }
+  )
+  ({ Token.kind == word, Token.category == "NNP" })
+  (
+    { Token.kind == word, Token.string == "and" }
+    { Token.kind == word, Token.category == "NNP" }
+  )?
+) :Court
+-->
+:Court .COURT = { rule = "COURT_2", kind="HIGH_COURT" }
+
+Rule: LEGAL_DECISION
+Priority: 20
+(
+  { Token.string == "appeal" }
+  ({ Token.string == "is" })?
+  (
+    { Token.string == "allowed" } |
+    { Token.string == "disposed" } |
+    { Token.string == "dismissed" }
+  )
+) :Decision
+-->
+:Decision .LEGAL_DECISION = { rule = "LEGAL_DECISION", kind="LEGAL_DECISION" }
+
+Rule: ACT
+Priority: 20
+(
+  ({ Token.string == "the" })?
+  (
+    (
+      { Token.orth == "upperInitial", Token.category == "NNP" } |
+      { Token.orth == "upperInitial", Token.category == "JJ" }
+    )
+    ({ Token.kind == word } | { Token.kind == punctuation })*
+    ({ Token.string == "Act" } | { Token.string == "Adhiniyam" } | { Token.string == "Code" } )
+    (
+      ({ Token.string == "," })?
+      { Token.kind == number, Token.length == 4 }
+    )
+  ) :Law
+)
+-->
+:Law .LAW = { rule = "ACT", kind="ACT" }
+
+Rule: IPC
+Priority: 20
+(
+  (
+    (
+      { Token.string == "Section" } | 
+      { Token.string == "Sections" }
+    )
+    (
+      { Token.kind == number } |
+      { Token.kind == word, Token.string != "OF", Token.string != "of" } |
+      { Token.kind == punctuation }
+    )+
+    (
+      { Token.string == "of" }
+      ({ Token.string == "the" })?
+    )?
+    (
+      (
+        { Token.string == "Indian" }
+        { Token.string == "Penal" }
+        { Token.string == "Code" }
+      ) |
+      (
+        { Token.string == "I" }
+        ({ Token.string == "." })?
+        { Token.string == "P" }
+        ({ Token.string == "." })?
+        { Token.string == "C" }
+        ({ Token.string == "." })?
+      ) | 
+      (
+        { Token.string == "IPC" }
+      )
+    )
+  ) :Law
+)
+-->
+:Law .LAW = { rule = "ACT", kind="IPC" }
+
+// Rule: LOCATION
+// Priority: 20
+// (
+//   ({ Lookup.minorType == "city" })
+// ) :Loc
+// -->
+// :Loc .LOCATION = { rule = "LOCATION", kind="LOCATION" }
+
+// Phase: instances
+// Input: Sentence
+// Options: control = appelt
+// Rule: pair
+// ({Sentence}):s
+// -->
+// {
+//    Annotation sent = ((AnnotationSet)bindings.get("s")).iterator().next();
+//    Long sentStart = sent.getStartNode().getOffset();
+//    Long sentEnd = sent.getEndNode().getOffset();
+//    AnnotationSet types = inputAS.get("PARTICIPANT_TYPE", sentStart, sentEnd);
+//    AnnotationSet participants = inputAS.get("PARTICIPANT", sentStart, sentEnd);
+//    for(Annotation t : types) {
+//      for(Annotation p : participants) {
+//        gate.FeatureMap fm = gate.Factory.newFeatureMap();
+//        Long tStart = t.getStartNode().getOffset();
+//        Long pStart = p.getStartNode().getOffset();
+//        Long tEnd = t.getEndNode().getOffset();
+//        Long pEnd = p.getEndNode().getOffset();
+//        Long left = (tStart < pStart) ? tStart : pStart; 
+//        Long right = (tEnd > pEnd) ? tEnd : pEnd; 
+//        fm.put("type-id",t.getId().toString());
+//        fm.put("participant-id",p.getId().toString());
+//        try {
+//          outputAS.add(left, right, "is-a", fm);
+//        } catch(Exception e){
+    
+//        }
+//      }
+//    }
+
+// }
